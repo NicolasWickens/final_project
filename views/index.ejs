@@ -1,0 +1,16 @@
+<!doctype html>
+  <h2>Products</h2>
+
+  <ul>
+    <% products.forEach(product => { %>
+
+      <li>
+        <strong><%= product.name %></strong>
+
+        -
+
+        $<%= product.price.toFixed(2) %>
+      </li>
+
+    <% }) %>
+  </ul>

@@ -1,0 +1,27 @@
+{
+  "name": "express-crud",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasWickens/final_project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NicolasWickens/final_project/issues"
+  },
+  "homepage": "https://github.com/NicolasWickens/final_project#readme",
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "expres": "^0.0.5",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1"
+  }
+}
