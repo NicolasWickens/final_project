@@ -1,41 +1,67 @@
-<!DOCTYPE html>	  
+<!DOCTYPE html>
 <h2>Products</h2>
 
-  <% if ( success ) { %>
+<% if ( success ) { %>
 
-  <div style="background: limegreen; color: white; display: inline-block">
-      Product created successfully.
-  </div>
+<div style="background: limegreen; color: white; display: inline-block">
+  Product created successfully.
+</div>
 
-  <% } %>
+<% } %>
 
 <table>
 
-<thead>
-	<tr>
-	<th>ID</th>
-	<th>Name</th>
-	<th>Price</th>
-	</tr>
-</thead>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Price</th>
+    </tr>
+  </thead>
 
-<tbody>
+  <tbody>
 
-	<% products.forEach(product => { %>
+    <% products.forEach(product => { %>
 
-	<tr>
-		<td><%= product.id %></td>
-		<td>
-    		<a href="/products/<%= product.id %>">
-        	<%= product.name %>
-    		</a>
-  		</td>
-		<td>$<%= product.price %></td>
-	</tr>
+    <tr>
+      <td><%= product.id %></td>
+      <td>
+        <a href="/products/<%= product.id %>">
+          <%= product.name %>
+        </a>
+      </td>
+      <td>$<%= product.price %></td>
+    </tr>
 
-	<% }) %>
+    <% }) %>
 
-</tbody>
+  </tbody>
+  <% if (page > 1) { %>
+  <a href="/products?page=<%= page - 1 %>">Previous</a>
+  <% } %>
+  <nav>
+    <% for ( let i = 1; i <= totalPages; i++ ) { %>
+    <% if(i === page) { %>
+
+    <p>
+      Showing page
+      <%= page %>
+      of
+      <%= totalPages %>
+    </p>
+
+    <% } else { %>
+
+    <a href="/products?page=<%= i %>">
+      <%= i %>
+    </a>
+
+    <% } %>
+    <% } %>
+  </nav>
+  <% if (page < totalPages) { %>
+  <a href="/products?page=<%= page + 1 %>">Next</a>
+  <% } %>
 
 </table>
 <p>Total Products: <%= total %></p>

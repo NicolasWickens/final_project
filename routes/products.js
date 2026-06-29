@@ -42,7 +42,7 @@ router.post("/create", (req, res) => {
   }
 
   productRepository.create(name, description, numericPrice);
-//   res.redirect("/products?success=1");
+  //   res.redirect("/products?success=1");
   const db = require("../db/db");
   const result = db.prepare("SELECT last_insert_rowid() AS id").get();
   const newProductId = result.id;
@@ -57,27 +57,28 @@ router.get("/", (req, res) => {
 
   const column = allowed.includes(sort) ? sort : "id";
 
-  const stmt = db.prepare(`
-		  SELECT *
-		  FROM products
-		  ORDER BY ${column}
-	  `);
+  let page = Number(req.query.page) || 1;
+  const limit = 10;
+  const totalRecords = productRepository.count();
+  const totalPages = Math.ceil(totalRecords / limit);
+  if (!Number.isInteger(page) || page < 1) {
+	page = 1;
+  }
+  if (page > totalPages) {
+	page = totalPages;
+  }
 
-  const products = stmt.all();
+  const products = productRepository.findPage( page, limit );
 
-  const countStmt = db.prepare(`
-	  SELECT COUNT(*) AS total
-	  FROM products
-  `);
-
-  const result = countStmt.get();
 
   const success = req.query.success;
   res.render("products/list", {
     success,
     title: "Products",
     products,
-    total: result.total,
+    total: totalRecords,
+    page,
+    totalPages,
   });
 });
 
