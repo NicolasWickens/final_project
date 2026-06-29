@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<h2><%= product.name %></h2>
+
+  <% if ( success ) { %>
+
+  <div style="background: limegreen; color: white; display: inline-block">
+      Product created successfully.
+  </div>
+
+  <% } %>
+
+<p>
+  <strong>Price:</strong>
+  $<%= product.price %>
+</p>
+
+<p><%= product.description %></p>
+
+<a href="/products">Back to Products</a>
+<a href="/products/<%= id - 1 %>">Previous Product</a>
+<a href="/products/<%= id + 1 %>">Next Product</a>

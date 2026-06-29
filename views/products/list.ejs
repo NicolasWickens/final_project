@@ -1,0 +1,41 @@
+<!DOCTYPE html>	  
+<h2>Products</h2>
+
+  <% if ( success ) { %>
+
+  <div style="background: limegreen; color: white; display: inline-block">
+      Product created successfully.
+  </div>
+
+  <% } %>
+
+<table>
+
+<thead>
+	<tr>
+	<th>ID</th>
+	<th>Name</th>
+	<th>Price</th>
+	</tr>
+</thead>
+
+<tbody>
+
+	<% products.forEach(product => { %>
+
+	<tr>
+		<td><%= product.id %></td>
+		<td>
+    		<a href="/products/<%= product.id %>">
+        	<%= product.name %>
+    		</a>
+  		</td>
+		<td>$<%= product.price %></td>
+	</tr>
+
+	<% }) %>
+
+</tbody>
+
+</table>
+<p>Total Products: <%= total %></p>
