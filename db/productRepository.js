@@ -45,9 +45,25 @@ function findPage(page, limit) {
   return stmt.all(limit, offset);
 }
 
+function update(id, name, description, price) {
+  const stmt = db.prepare(`
+        UPDATE products
+
+        SET
+            name = ?,
+            description = ?,
+            price = ?
+
+        WHERE id = ?
+    `);
+
+  return stmt.run(name, description, price, id);
+}
+
 module.exports = {
   findById,
   create,
   count,
-  findPage
+  findPage,
+  update,
 };

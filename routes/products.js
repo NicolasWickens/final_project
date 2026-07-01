@@ -140,4 +140,47 @@ router.get("/:id", (req, res) => {
   });
 });
 
+router.get("/edit/:id", (req, res) => {
+  const product = productRepository.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).render("404");
+  }
+
+  res.render("products/edit", {
+    title: "Edit Product",
+    product,
+  });
+});
+
+router.post("/edit/:id", (req, res) => {
+  const { name, description, price } = req.body;
+
+  if (!name) {
+    return res.render("products/edit", {
+      title: "Edit Product",
+      error: "Name is required.",
+      product: { id: req.params.id, name, description, price },
+    });
+  }
+
+  const numericPrice = Number(price);
+  if (Number.isNaN(numericPrice) || numericPrice <= 0) {
+    return res.render("products/edit", {
+      title: "Edit Product",
+      error: "Invalid price.",
+      product: { id: req.params.id, name, description, price },
+    });
+  }
+
+  const id = req.params.id;
+
+  result = productRepository.update(id, name, description, price);
+  if (result.changes === 0) {
+    return res.status(404).render("404");
+  }
+
+  res.redirect(`/products/${id}`);
+});
+
 module.exports = router;
