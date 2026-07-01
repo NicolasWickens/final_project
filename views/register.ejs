@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<h2>Register</h2>
+<% if ( typeof error !== "undefined" ) { %>
+<div class="error" style="color: red;">
+  <%= error %>
+</div>
+<% } %>
+<form method="post" action="/register">
+  <label>email: <input type="email" name="email" value="<% email ? email : '' %>" /></label>
+  <label>password: <input type="password" name="password" /></label>
+  <label>confirm password: <input type="password" name="confirmPassword" /></label>
+  <button>Register</button>
+</form>

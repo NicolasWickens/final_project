@@ -34,7 +34,7 @@ const router = express.Router();
 const productRepository = require("../db/productRepository");
 
 // Route for creating a new product
-router.get("/create", (req, res) => {
+router.get("/create", productRepository.requireAuth, (req, res) => {
   res.render("products/create", {
     title: "Create Product",
     product: req.body,
@@ -159,7 +159,7 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/delete_products", (req, res) => {
+router.get("/delete_products", productRepository.requireAuth, (req, res) => {
   const sort = req.query.sort || "id";
 
   const allowed = ["id", "name", "price"];
@@ -220,7 +220,7 @@ router.get("/delete_products", (req, res) => {
   });
 });
 
-router.get("/delete/:id", (req, res) => {
+router.get("/delete/:id", productRepository.requireAuth, (req, res) => {
   const product = productRepository.findById(req.params.id);
 
   if (!product) {
@@ -276,7 +276,7 @@ router.get("/:id", (req, res) => {
   });
 });
 
-router.get("/edit/:id", (req, res) => {
+router.get("/edit/:id", productRepository.requireAuth, (req, res) => {
   const product = productRepository.findById(req.params.id);
 
   if (!product) {

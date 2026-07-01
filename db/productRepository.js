@@ -119,6 +119,13 @@ function findProductImages(productId) {
   return stmt.all(productId);
 }
 
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.redirect("/login");
+  }
+  next();
+}
+
 module.exports = {
   findById,
   findDeletedById,
@@ -130,4 +137,5 @@ module.exports = {
   restoreById,
   saveProductImage,
   findProductImages,
+  requireAuth,
 };

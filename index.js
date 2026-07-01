@@ -2,6 +2,8 @@ const express = require("express");
 
 const app = express();
 
+const bcrypt = require("bcrypt");
+
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
@@ -13,6 +15,10 @@ app.use(express.static("public"));
 const path = require("node:path");
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+const session = require("express-session");
+const { loadEnvFile } = require("node:process");
+loadEnvFile();
 
 // const products = [
 //   {
@@ -87,8 +93,83 @@ app.set("views", path.join(__dirname, "views"));
 
 const expressLayouts = require("express-ejs-layouts");
 const productsRouter = require("./routes/products");
+const userRepository = require("./db/userRepository");
 
 app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
+// Use Session Middleware:
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+app.use((req, res, next) => {
+  res.locals.userId = req.session.userId;
+  next();
+});
 app.use("/products", productsRouter);
-app.use('/uploads', express.static('uploads'));
+
+app.get("/login", (req, res) => {
+  res.render("login", {
+    title: "Login",
+  });
+});
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = userRepository.findByEmail(email);
+
+  if (!user) {
+    return res.send("User not found");
+  }
+
+  const valid = await bcrypt.compare(password, user.password_hash);
+
+  if (!valid) {
+    return res.send("Unauthorized access");
+  }
+
+  req.session.userId = user.id;
+  res.redirect("/products");
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
+});
+
+app.get("/register", (req, res) => {
+  res.render("register", {
+    title: "Register",
+    email: "",
+  });
+});
+
+app.post("/register", async (req, res) => {
+  const { email, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.render("register", {
+      title: "Register",
+      error: "Passwords do not match",
+      email,
+    });
+  }
+
+  const existingUser = userRepository.findByEmail(email);
+  if (existingUser) {
+    return res.render("register", {
+      title: "Register",
+      error: "Email already exists",
+      email,
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  userRepository.createUser(email, passwordHash);
+  
+  res.redirect("/login");
+});

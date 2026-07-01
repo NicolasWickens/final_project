@@ -1,13 +1,27 @@
 <!doctype html>
 <html>
-  <head>
-    <title><%= title %></title>
-  </head>
-  <body>
-    <%- include('partials/header') %>
 
-    <main><%- include('partials/navigation') %> <%- body %></main>
+<head>
+  <title><%= title %></title>
+</head>
 
-    <%- include('partials/footer') %>
-  </body>
+<body>
+  <%- include('partials/header') %>
+
+  <nav>
+    <% if ( userId ) { %>
+    Logged In
+    <a href="/logout">Logout</a>
+    <% } else { %>
+    Logged out
+    <a href="/login">Login</a>
+    <a href="/register">Register</a>
+    <% } %>
+  </nav>
+
+  <main><%- include('partials/navigation') %> <%- body %></main>
+
+  <%- include('partials/footer') %>
+</body>
+
 </html>

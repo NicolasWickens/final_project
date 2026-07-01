@@ -18,12 +18,9 @@ db.exec(`
 console.log("Database created successfully.");
 
 db.exec(`
-    CREATE TABLE product_images (
-
-      id INTEGER PRIMARY KEY,
-
-      product_id INTEGER,
-
-      filename TEXT
-
-  );`);
+INSERT INTO users (email, password_hash)
+    VALUES
+    ('user1@example.com', '$2b$10$GFfVuIolc8j.qa0qGTWUJuxt/aYgAS0aoQzwIyFlwne0Hl7DtmTwO'),
+    ('user2@example.com', '$2b$10$aV4wATg2lRM1VpvuOAZT3ORuMMWI/BJf5bQ.F1sCH.cFp98dhfht.'),
+    ('user3@example.com', '$2b$10$TOSxG1AFzCKZBMhGqrf8L.sS9SdgxDUwZ6BCVFUUY8AWDTcuC/x3W');
+  `);
