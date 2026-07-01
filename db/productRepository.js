@@ -100,6 +100,25 @@ function restoreById(id) {
   return stmt.run(id);
 }
 
+function saveProductImage(productId, filename) {
+  const stmt = db.prepare(`
+      INSERT INTO product_images (product_id, filename)
+      VALUES (?, ?)
+  `);
+
+  return stmt.run(productId, filename);
+}
+
+function findProductImages(productId) {
+  const stmt = db.prepare(`
+      SELECT filename
+      FROM product_images
+      WHERE product_id = ?
+  `);
+
+  return stmt.all(productId);
+}
+
 module.exports = {
   findById,
   findDeletedById,
@@ -109,4 +128,6 @@ module.exports = {
   update,
   deleteById,
   restoreById,
+  saveProductImage,
+  findProductImages,
 };

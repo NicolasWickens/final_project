@@ -1,6 +1,35 @@
 const express = require("express");
 const db = require("../db/db");
 
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    const extension = file.originalname.split(".").pop();
+
+    cb(null, file.fieldname + "-" + uniqueSuffix + "." + extension);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only JPEG, PNG, and WebP images are allowed."));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
+
 const router = express.Router();
 const productRepository = require("../db/productRepository");
 
@@ -13,40 +42,51 @@ router.get("/create", (req, res) => {
 });
 
 router.post("/create", (req, res) => {
-  const { name, description, price } = req.body;
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      return res.render("products/create", {
+        title: "Create Product",
+        error: "Invalid file",
+        product: req.body,
+      });
+    }
 
-  if (!name) {
-    return res.render("products/create", {
-      title: "Create Product",
-      error: "Name is required.",
-      product: req.body,
-    });
-  }
+    const { name, description, price } = req.body;
 
-  const numericPrice = Number(price);
+    if (!name) {
+      return res.render("products/create", {
+        title: "Create Product",
+        error: "Name is required.",
+        product: req.body,
+      });
+    }
 
-  if (Number.isNaN(numericPrice)) {
-    return res.render("products/create", {
-      title: "Create Product",
-      error: "Price must be numeric.",
-      product: req.body,
-    });
-  }
+    const numericPrice = Number(price);
 
-  if (numericPrice <= 0) {
-    return res.render("products/create", {
-      title: "Create Product",
-      error: "Price must be greater than zero.",
-      product: req.body,
-    });
-  }
+    if (Number.isNaN(numericPrice)) {
+      return res.render("products/create", {
+        title: "Create Product",
+        error: "Price must be numeric.",
+        product: req.body,
+      });
+    }
 
-  productRepository.create(name, description, numericPrice);
-  //   res.redirect("/products?success=1");
-  const db = require("../db/db");
-  const result = db.prepare("SELECT last_insert_rowid() AS id").get();
-  const newProductId = result.id;
-  res.redirect(`/products/${newProductId}?success=1`);
+    if (numericPrice <= 0) {
+      return res.render("products/create", {
+        title: "Create Product",
+        error: "Price must be greater than zero.",
+        product: req.body,
+      });
+    }
+
+    productRepository.create(name, description, numericPrice);
+    //   res.redirect("/products?success=1");
+    const db = require("../db/db");
+    const result = db.prepare("SELECT last_insert_rowid() AS id").get();
+    const newProductId = result.id;
+    productRepository.saveProductImage(newProductId, req.file.filename);
+    res.redirect(`/products/${newProductId}?success=1`);
+  });
 });
 
 // Route for displaying all products
@@ -99,8 +139,6 @@ router.get("/", (req, res) => {
   } else {
     query += ` ORDER BY ${column} DESC LIMIT ? OFFSET ?`;
   }
-  console.log("this column is", column);
-  console.log("Query:", query);
   values.push(limit, (page - 1) * limit);
   const stmt = db.prepare(query);
   const products = stmt.all(...values);
@@ -162,8 +200,6 @@ router.get("/delete_products", (req, res) => {
   } else {
     query += ` ORDER BY ${column} DESC LIMIT ? OFFSET ?`;
   }
-  console.log("this column is", column);
-  console.log("Query:", query);
   values.push(limit, (page - 1) * limit);
   const stmt = db.prepare(query);
   const products = stmt.all(...values);
@@ -224,12 +260,19 @@ router.get("/:id", (req, res) => {
     });
   }
 
+  const productImages = productRepository.findProductImages(req.params.id);
+  let imageUrl = [];
+  for (const image of productImages) {
+    imageUrl.push(`/uploads/${image.filename}`);
+  }
+
   const success = req.query.success;
   res.render("products/single", {
     title: product.name,
     id: product.id,
     product,
     success,
+    image: imageUrl,
   });
 });
 
@@ -240,40 +283,77 @@ router.get("/edit/:id", (req, res) => {
     return res.status(404).render("404", { title: "Product not found" });
   }
 
+  const productImages = productRepository.findProductImages(req.params.id);
+  let imageUrl = [];
+  for (const image of productImages) {
+    imageUrl.push(`/uploads/${image.filename}`);
+  }
+
   res.render("products/edit", {
     title: "Edit Product",
     product,
+    image: imageUrl,
   });
 });
 
 router.post("/edit/:id", (req, res) => {
-  const { name, description, price } = req.body;
+  upload.single("image")(req, res, (err) => {
+    const { name, description, price } = req.body;
+    if (err) {
+      const productImages = productRepository.findProductImages(req.params.id);
+      let imageUrl = [];
+      for (const image of productImages) {
+        imageUrl.push(`/uploads/${image.filename}`);
+      }
+      return res.render("products/edit", {
+        title: "Edit Product",
+        error: "Invalid file",
+        product: { id: req.params.id, name, description, price },
+        image: imageUrl,
+      });
+    }
 
-  if (!name) {
-    return res.render("products/edit", {
-      title: "Edit Product",
-      error: "Name is required.",
-      product: { id: req.params.id, name, description, price },
-    });
-  }
+    if (!name) {
+      const productImages = productRepository.findProductImages(req.params.id);
+      let imageUrl = [];
+      for (const image of productImages) {
+        imageUrl.push(`/uploads/${image.filename}`);
+      }
+      return res.render("products/edit", {
+        title: "Edit Product",
+        error: "Name is required.",
+        product: { id: req.params.id, name, description, price },
+        image: imageUrl,
+      });
+    }
 
-  const numericPrice = Number(price);
-  if (Number.isNaN(numericPrice) || numericPrice <= 0) {
-    return res.render("products/edit", {
-      title: "Edit Product",
-      error: "Invalid price.",
-      product: { id: req.params.id, name, description, price },
-    });
-  }
+    const numericPrice = Number(price);
+    if (Number.isNaN(numericPrice) || numericPrice <= 0) {
+      const productImages = productRepository.findProductImages(req.params.id);
+      let imageUrl = [];
+      for (const image of productImages) {
+        imageUrl.push(`/uploads/${image.filename}`);
+      }
+      return res.render("products/edit", {
+        title: "Edit Product",
+        error: "Invalid price.",
+        product: { id: req.params.id, name, description, price },
+        image: imageUrl,
+      });
+    }
 
-  const id = req.params.id;
+    const id = req.params.id;
+    let result = productRepository.saveProductImage(id, req.file.filename);
+    if (result.changes === 0) {
+      return res.status(404).render("404", { title: "Product not found" });
+    }
+    result = productRepository.update(id, name, description, price);
+    if (result.changes === 0) {
+      return res.status(404).render("404", { title: "Product not found" });
+    }
 
-  const result = productRepository.update(id, name, description, price);
-  if (result.changes === 0) {
-    return res.status(404).render("404", { title: "Product not found" });
-  }
-
-  res.redirect(`/products/${id}`);
+    res.redirect(`/products/${id}`);
+  });
 });
 
 router.get("/restore/:id", (req, res) => {

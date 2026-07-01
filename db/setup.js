@@ -18,4 +18,12 @@ db.exec(`
 console.log("Database created successfully.");
 
 db.exec(`
-  ALTER TABLE products ADD COLUMN deleted_at DATETIME;`);
+    CREATE TABLE product_images (
+
+      id INTEGER PRIMARY KEY,
+
+      product_id INTEGER,
+
+      filename TEXT
+
+  );`);

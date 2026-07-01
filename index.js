@@ -90,4 +90,5 @@ const productsRouter = require("./routes/products");
 
 app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
-app.use('/products', productsRouter);
+app.use("/products", productsRouter);
+app.use('/uploads', express.static('uploads'));

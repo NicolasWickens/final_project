@@ -9,6 +9,10 @@
 
 <% } %>
 
+<% for (const img of image) { %>
+  <img src="<%= img %>" alt="Product Image" style="max-width: 300px; height: auto;">
+<% } %>
+
 <p>
   <strong>Price:</strong>
   $<%= product.price %>
