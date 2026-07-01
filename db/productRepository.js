@@ -23,13 +23,13 @@ function create(name, description, price) {
   return stmt.run(name, description, price);
 }
 
-function count() {
-  const stmt = db.prepare(`
-          SELECT COUNT(*) AS total
-          FROM products
-      `);
-
-  return stmt.get().total;
+function count(conditions = [], values = []) {
+  let query = "SELECT COUNT(*) AS total FROM products";
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+  const stmt = db.prepare(query);
+  return stmt.get(...values).total;
 }
 
 function findPage(page, limit) {

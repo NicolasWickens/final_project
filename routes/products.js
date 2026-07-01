@@ -59,26 +59,60 @@ router.get("/", (req, res) => {
 
   let page = Number(req.query.page) || 1;
   const limit = 10;
-  const totalRecords = productRepository.count();
+  const search = req.query.search || "";
+  const minPrice = Number(req.query.minPrice) || 0;
+  const nameAsc = req.query.nameAsc === "true";
+  const priceAsc = req.query.priceAsc === "true";
+
+  const conditions = [];
+  const values = [];
+  if (search !== "") {
+    conditions.push("(name LIKE ? OR description LIKE ?)");
+    const searchTerm = `%${search}%`;
+    values.push(searchTerm, searchTerm);
+  }
+  if (minPrice > 0) {
+    conditions.push("price >= ?");
+    values.push(minPrice);
+  }
+  const totalRecords = productRepository.count(conditions, values);
   const totalPages = Math.ceil(totalRecords / limit);
   if (!Number.isInteger(page) || page < 1) {
-	page = 1;
+    page = 1;
   }
   if (page > totalPages) {
-	page = totalPages;
+    page = totalPages;
   }
-
-  const products = productRepository.findPage( page, limit );
-
-
+  let query = "SELECT * FROM products";
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+  if (nameAsc) {
+    query += ` ORDER BY name ASC LIMIT ? OFFSET ?`;
+  } else if (priceAsc) {
+    query += ` ORDER BY price ASC LIMIT ? OFFSET ?`;
+  } else {
+    query += ` ORDER BY ${column} DESC LIMIT ? OFFSET ?`;
+  }
+  console.log("this column is", column);
+  console.log("Query:", query);
+  values.push(limit, (page - 1) * limit);
+  const stmt = db.prepare(query);
+  const products = stmt.all(...values);
   const success = req.query.success;
+  // const products = productRepository.findPage(page, limit);
+
   res.render("products/list", {
     success,
     title: "Products",
-    products,
     total: totalRecords,
     page,
     totalPages,
+    products: products,
+    search,
+    minPrice,
+    nameAsc,
+    priceAsc,
   });
 });
 

@@ -9,6 +9,28 @@
 
 <% } %>
 
+<form method="get">
+    <input
+        type="text"
+        name="search"
+        placeholder="Search products"
+        value="<%= search %>"
+    >
+
+    <label>Minimum Price
+      <input type="number" name="minPrice" value="<%= minPrice %>">
+    </label>
+
+
+    <label><input type="checkbox" name="nameAsc" value="true" <%= nameAsc ? 'checked' : '' %>> Name (Ascending)</label>
+    <label><input type="checkbox" name="priceAsc" value="true" <%= priceAsc ? 'checked' : '' %>> Price (Ascending)</label>
+
+    <button type="submit">
+        Search
+    </button>
+</form>
+
+
 <table>
 
   <thead>
@@ -37,7 +59,7 @@
 
   </tbody>
   <% if (page > 1) { %>
-  <a href="/products?page=<%= page - 1 %>">Previous</a>
+  <a href="/products?search=<%= search %>&minPrice=<%= minPrice %>&page=<%= page - 1 %>&nameAsc=<%= nameAsc %>&priceAsc=<%= priceAsc %>">Previous</a>
   <% } %>
   <nav>
     <% for ( let i = 1; i <= totalPages; i++ ) { %>
@@ -52,7 +74,7 @@
 
     <% } else { %>
 
-    <a href="/products?page=<%= i %>">
+    <a href="/products?search=<%= search %>&minPrice=<%= minPrice %>&page=<%= i %>&nameAsc=<%= nameAsc %>&priceAsc=<%= priceAsc %>">
       <%= i %>
     </a>
 
@@ -60,7 +82,7 @@
     <% } %>
   </nav>
   <% if (page < totalPages) { %>
-  <a href="/products?page=<%= page + 1 %>">Next</a>
+  <a href="/products?search=<%= search %>&minPrice=<%= minPrice %>&page=<%= page + 1 %>&nameAsc=<%= nameAsc %>&priceAsc=<%= priceAsc %>">Next</a>
   <% } %>
 
 </table>
