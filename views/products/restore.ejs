@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<h2>Restore Product</h2>
+<p>Are you sure you want to restore: <strong><%= product.name %></strong>?</p>
+
+<form method="post" action="/products/restore/<%= product.id %>">
+  <button type="submit">Restore</button>
+</form>

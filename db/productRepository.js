@@ -4,7 +4,17 @@ function findById(id) {
   const stmt = db.prepare(`
           SELECT *
           FROM products
-          WHERE id = ?
+          WHERE id = ? AND deleted_at IS NULL
+      `);
+
+  return stmt.get(id);
+}
+
+function findDeletedById(id) {
+  const stmt = db.prepare(`
+          SELECT *
+          FROM products
+          WHERE id = ? AND deleted_at IS NOT NULL
       `);
 
   return stmt.get(id);
@@ -28,6 +38,11 @@ function count(conditions = [], values = []) {
   if (conditions.length > 0) {
     query += " WHERE " + conditions.join(" AND ");
   }
+  if (conditions.length > 0) {
+    query += " AND deleted_at IS NULL";
+  } else {
+    query += " WHERE deleted_at IS NULL";
+  }
   const stmt = db.prepare(query);
   return stmt.get(...values).total;
 }
@@ -38,6 +53,7 @@ function findPage(page, limit) {
           SELECT *
           FROM products
           ORDER BY id DESC
+          WHERE deleted_at IS NULL
           LIMIT ?
           OFFSET ?
       `);
@@ -54,16 +70,43 @@ function update(id, name, description, price) {
             description = ?,
             price = ?
 
-        WHERE id = ?
+        WHERE id = ? AND deleted_at IS NULL
     `);
 
   return stmt.run(name, description, price, id);
 }
 
+function deleteById(id) {
+  const stmt = db.prepare(`
+        UPDATE products
+
+        SET deleted_at = CURRENT_TIMESTAMP
+
+        WHERE id = ?
+      `);
+
+  return stmt.run(id);
+}
+
+function restoreById(id) {
+  const stmt = db.prepare(`
+        UPDATE products
+
+        SET deleted_at = NULL
+
+        WHERE id = ?
+      `);
+
+  return stmt.run(id);
+}
+
 module.exports = {
   findById,
+  findDeletedById,
   create,
   count,
   findPage,
   update,
+  deleteById,
+  restoreById,
 };

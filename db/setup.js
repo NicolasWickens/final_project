@@ -18,12 +18,4 @@ db.exec(`
 console.log("Database created successfully.");
 
 db.exec(`
-  INSERT INTO products (name, description, price)
-  VALUES
-  ('Mechanical Keyboard', 'RGB Gaming Keyboard', 89.99),
-
-  ('Wireless Mouse', 'Bluetooth Mouse', 24.99),
-
-  ('27 Inch Monitor', '4K IPS Display', 349.99);
-  `);
-console.log("Sample products inserted successfully.");
+  ALTER TABLE products ADD COLUMN deleted_at DATETIME;`);

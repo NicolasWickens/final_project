@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<h2>Delete Product</h2>
+<p>Are you sure you want to delete: <strong><%= product.name %></strong>?</p>
+
+<form method="post" action="/products/delete/<%= product.id %>">
+  <button type="submit">Delete</button>
+</form>

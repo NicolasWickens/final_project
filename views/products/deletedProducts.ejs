@@ -1,13 +1,6 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <h2>Products</h2>
-
-<% if ( success ) { %>
-
-<div style="background: limegreen; color: white; display: inline-block">
-  Product created successfully.
-</div>
-
-<% } %>
 
 <form method="get">
     <input
@@ -55,7 +48,7 @@
       <td>$<%= product.price %></td>
       <td>
         <a href="/products/edit/<%= product.id %>">Edit</a>
-        <a href="/products/delete/<%= product.id %>">Delete</a>
+        <a href="/products/restore/<%= product.id %>">Restore</a>
       </td>
     </tr>
 

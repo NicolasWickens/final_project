@@ -87,6 +87,11 @@ router.get("/", (req, res) => {
   if (conditions.length > 0) {
     query += " WHERE " + conditions.join(" AND ");
   }
+  if (conditions.length > 0) {
+    query += " AND deleted_at IS NULL";
+  } else {
+    query += " WHERE deleted_at IS NULL";
+  }
   if (nameAsc) {
     query += ` ORDER BY name ASC LIMIT ? OFFSET ?`;
   } else if (priceAsc) {
@@ -114,6 +119,94 @@ router.get("/", (req, res) => {
     nameAsc,
     priceAsc,
   });
+});
+
+router.get("/delete_products", (req, res) => {
+  const sort = req.query.sort || "id";
+
+  const allowed = ["id", "name", "price"];
+
+  const column = allowed.includes(sort) ? sort : "id";
+
+  let page = Number(req.query.page) || 1;
+  const limit = 10;
+  const search = req.query.search || "";
+  const minPrice = Number(req.query.minPrice) || 0;
+  const nameAsc = req.query.nameAsc === "true";
+  const priceAsc = req.query.priceAsc === "true";
+
+  const conditions = [];
+  const values = [];
+  if (search !== "") {
+    conditions.push("(name LIKE ? OR description LIKE ?)");
+    const searchTerm = `%${search}%`;
+    values.push(searchTerm, searchTerm);
+  }
+  if (minPrice > 0) {
+    conditions.push("price >= ?");
+    values.push(minPrice);
+  }
+  let query = "SELECT * FROM products";
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+  if (conditions.length > 0) {
+    query += " AND deleted_at IS NOT NULL";
+  } else {
+    query += " WHERE deleted_at IS NOT NULL";
+  }
+  if (nameAsc) {
+    query += ` ORDER BY name ASC LIMIT ? OFFSET ?`;
+  } else if (priceAsc) {
+    query += ` ORDER BY price ASC LIMIT ? OFFSET ?`;
+  } else {
+    query += ` ORDER BY ${column} DESC LIMIT ? OFFSET ?`;
+  }
+  console.log("this column is", column);
+  console.log("Query:", query);
+  values.push(limit, (page - 1) * limit);
+  const stmt = db.prepare(query);
+  const products = stmt.all(...values);
+
+  const totalRecords = products.length;
+  const totalPages = Math.ceil(totalRecords / limit);
+
+  res.render("products/deletedProducts", {
+    title: "Deleted Products",
+    total: totalRecords,
+    page,
+    totalPages,
+    products: products,
+    search,
+    minPrice,
+    nameAsc,
+    priceAsc,
+  });
+});
+
+router.get("/delete/:id", (req, res) => {
+  const product = productRepository.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).render("404", { title: "Product not found" });
+  }
+
+  res.render("products/delete", {
+    title: "Delete Product",
+    product,
+  });
+});
+
+router.post("/delete/:id", (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).send("Invalid ID");
+  }
+  const result = productRepository.deleteById(req.params.id);
+  if (result.changes === 0) {
+    return res.status(404).render("404", { title: "Product not found" });
+  }
+  res.redirect("/products");
 });
 
 // Route for displaying a single product by ID
@@ -144,7 +237,7 @@ router.get("/edit/:id", (req, res) => {
   const product = productRepository.findById(req.params.id);
 
   if (!product) {
-    return res.status(404).render("404");
+    return res.status(404).render("404", { title: "Product not found" });
   }
 
   res.render("products/edit", {
@@ -175,12 +268,37 @@ router.post("/edit/:id", (req, res) => {
 
   const id = req.params.id;
 
-  result = productRepository.update(id, name, description, price);
+  const result = productRepository.update(id, name, description, price);
   if (result.changes === 0) {
-    return res.status(404).render("404");
+    return res.status(404).render("404", { title: "Product not found" });
   }
 
   res.redirect(`/products/${id}`);
+});
+
+router.get("/restore/:id", (req, res) => {
+  const product = productRepository.findDeletedById(req.params.id);
+
+  if (!product) {
+    return res.status(404).render("404", { title: "Product not found" });
+  }
+
+  res.render("products/restore", {
+    title: "Restore Product",
+    product,
+  });
+});
+
+router.post("/restore/:id", (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).send("Invalid ID");
+  }
+  const result = productRepository.restoreById(req.params.id);
+  if (result.changes === 0) {
+    return res.status(404).render("404", { title: "Product not found" });
+  }
+  res.redirect("/products");
 });
 
 module.exports = router;
