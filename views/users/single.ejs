@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<h2>Edit User</h2>
+
+<form action="/users/edit/<%= userDetail.id %>" method="post">
+  <% if ( typeof error !== "undefined" ) { %>
+  <div class="error" style="color: red;">
+    <%= error %>
+  </div>
+  <% } %>
+
+  <div>
+    <label>Email</label>
+
+    <input type="email" name="email" value="<%= userDetail.email %>" />
+  </div>
+
+  <div>
+    <label>Role</label>
+
+    <select name="role">
+      <option value="viewer" <%= userDetail.role === "viewer" ? "selected" : "" %>>Viewer</option>
+      <option value="editor" <%= userDetail.role === "editor" ? "selected" : "" %>>Editor</option>
+      <option value="admin" <%= userDetail.role === "admin" ? "selected" : "" %>>Admin</option>
+    </select>
+  </div>
+
+
+  <button type="submit">Save Changes</button>
+</form>

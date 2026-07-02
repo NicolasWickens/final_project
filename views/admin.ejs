@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<h2>Products</h2>
+<h2>WELCOME, ADMINISTRATOR</h2>
 
 <% if ( success ) { %>
 
@@ -8,28 +7,6 @@
 </div>
 
 <% } %>
-
-<form method="get">
-    <input
-        type="text"
-        name="search"
-        placeholder="Search products"
-        value="<%= search %>"
-    >
-
-    <label>Minimum Price
-      <input type="number" name="minPrice" value="<%= minPrice %>">
-    </label>
-
-
-    <label><input type="checkbox" name="nameAsc" value="true" <%= nameAsc ? 'checked' : '' %>> Name (Ascending)</label>
-    <label><input type="checkbox" name="priceAsc" value="true" <%= priceAsc ? 'checked' : '' %>> Price (Ascending)</label>
-
-    <button type="submit">
-        Search
-    </button>
-</form>
-
 
 <table>
 
@@ -54,12 +31,8 @@
       </td>
       <td>$<%= product.price %></td>
       <td>
-        <% if (user && (user.role === 'editor' || user.role === 'admin')) {%>
         <a href="/products/edit/<%= product.id %>">Edit</a>
-        <% } %>
-        <% if (user && user.role === 'admin') {%>
-          <a href="/products/delete/<%= product.id %>">Delete</a>
-        <% } %>
+        <a href="/products/delete/<%= product.id %>">Delete</a>
       </td>
     </tr>
 
@@ -94,4 +67,31 @@
   <% } %>
 
 </table>
-<p>Total Products: <%= total %></p>
+
+<table>
+  <thead>
+	<tr>
+	  <th>ID</th>
+	  <th>Email</th>
+	  <th>Role</th>
+	</tr>
+  </thead>
+
+  <tbody>
+
+	<% users.forEach(user => { %>
+
+	<tr>
+	  <td><%= user.id %></td>
+	  <td><%= user.email %></td>
+	  <td><%= user.role %></td>
+	  <td>
+		<a href="/users/edit/<%= user.id %>">Edit</a>
+		<a href="/users/delete/<%= user.id %>">Delete</a>
+	  </td>
+	</tr>
+
+	<% }) %>
+
+  </tbody>
+</table>

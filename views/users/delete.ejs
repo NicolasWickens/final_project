@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<h2>Delete User</h2>
+<p>Are you sure you want to delete: <strong><%= userDetail.email %></strong>?</p>
+
+<form method="post" action="/users/delete/<%= userDetail.id %>">
+  <button type="submit">Delete</button>
+</form>

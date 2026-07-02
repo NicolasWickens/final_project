@@ -144,7 +144,6 @@ router.get("/", (req, res) => {
   const products = stmt.all(...values);
   const success = req.query.success;
   // const products = productRepository.findPage(page, limit);
-
   res.render("products/list", {
     success,
     title: "Products",
@@ -156,6 +155,7 @@ router.get("/", (req, res) => {
     minPrice,
     nameAsc,
     priceAsc,
+    user: req.user
   });
 });
 
@@ -233,10 +233,17 @@ router.get("/delete/:id", productRepository.requireAuth, (req, res) => {
   });
 });
 
-router.post("/delete/:id", (req, res) => {
+router.post("/delete/:id", productRepository.requireAuth, productRepository.requireRole("admin"), (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
     return res.status(400).send("Invalid ID");
+  }
+  const productInfo = productRepository.findById(req.params.id);
+  if (!productInfo) {
+    return res.status(404).render("404", { title: "Product not found" });
+  }
+  if (productInfo.created_by !== req.user.id || req.user.role !== "admin") {
+    return res.status(403).render("403", { title: "Forbidden" });
   }
   const result = productRepository.deleteById(req.params.id);
   if (result.changes === 0) {

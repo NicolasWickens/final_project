@@ -126,6 +126,23 @@ function requireAuth(req, res, next) {
   next();
 }
 
+function requireRole(role) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.redirect("/login");
+    }
+    const roles = {
+      viewer: 1,
+      editor: 2,
+      admin: 3,
+    };
+    if (roles[req.user.role] < roles[role]) {
+      return res.status(403).render("403", { title: "403" });
+    }
+    next();
+  };
+}
+
 module.exports = {
   findById,
   findDeletedById,
@@ -138,4 +155,5 @@ module.exports = {
   saveProductImage,
   findProductImages,
   requireAuth,
+  requireRole,
 };
