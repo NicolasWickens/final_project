@@ -47,16 +47,16 @@ app.get("/login", (req, res) => {
     title: "Login",
   });
 });
-app.post("/login",  async (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = userRepository.findByEmail(email);
-  
+
   if (!user) {
     return res.send("User not found");
   }
-  
+
   const valid = await bcrypt.compare(password, user.password_hash);
-  
+
   if (!valid) {
     return res.send("Unauthorized access");
   }
@@ -107,7 +107,6 @@ app.post("/register", async (req, res) => {
 
   res.redirect("/login");
 });
-
 
 app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
   const sort = req.query.sort || "id";
@@ -180,6 +179,6 @@ app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
   });
 });
 
-      app.listen(3000, () => {
-        console.log("Server running at http://localhost:3000");
-      });
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});
