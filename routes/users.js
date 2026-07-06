@@ -55,7 +55,6 @@ router.post("/edit/:id", productRepository.requireAuth, productRepository.requir
   const userId = req.params.id;
   const {email, role } = req.body;
 
-  // Validate input
   if (!email || !role) {
 	return res.render("users/single", {
       title: "User Details",

@@ -26,14 +26,13 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 5 * 1024 * 1024,
   },
 });
 
 const router = express.Router();
 const productRepository = require("../db/productRepository");
 
-// Route for creating a new product
 router.get("/create", productRepository.requireAuth, (req, res) => {
   res.render("products/create", {
     title: "Create Product",
@@ -80,7 +79,6 @@ router.post("/create", (req, res) => {
     }
 
     productRepository.create(name, description, numericPrice);
-    //   res.redirect("/products?success=1");
     const db = require("../db/db");
     const result = db.prepare("SELECT last_insert_rowid() AS id").get();
     const newProductId = result.id;
@@ -89,7 +87,6 @@ router.post("/create", (req, res) => {
   });
 });
 
-// Route for displaying all products
 router.get("/", (req, res) => {
   const sort = req.query.sort || "id";
 
@@ -143,7 +140,6 @@ router.get("/", (req, res) => {
   const stmt = db.prepare(query);
   const products = stmt.all(...values);
   const success = req.query.success;
-  // const products = productRepository.findPage(page, limit);
   res.render("products/list", {
     success,
     title: "Products",
@@ -252,7 +248,6 @@ router.post("/delete/:id", productRepository.requireAuth, productRepository.requ
   res.redirect("/products");
 });
 
-// Route for displaying a single product by ID
 router.get("/:id", (req, res) => {
   const id = Number(req.params.id);
 
