@@ -82,7 +82,9 @@ router.post("/create", (req, res) => {
     const db = require("../db/db");
     const result = db.prepare("SELECT last_insert_rowid() AS id").get();
     const newProductId = result.id;
-    productRepository.saveProductImage(newProductId, req.file.filename);
+    if (req.file) {
+      productRepository.saveProductImage(newProductId, req.file.filename);
+    }
     res.redirect(`/products/${newProductId}?success=1`);
   });
 });
@@ -238,7 +240,7 @@ router.post("/delete/:id", productRepository.requireAuth, productRepository.requ
   if (!productInfo) {
     return res.status(404).render("404", { title: "Product not found" });
   }
-  if (productInfo.created_by !== req.user.id || req.user.role !== "admin") {
+  if (req.user.role !== "admin" && productInfo.created_by !== req.user.id) {
     return res.status(403).render("403", { title: "Forbidden" });
   }
   const result = productRepository.deleteById(req.params.id);
@@ -345,9 +347,11 @@ router.post("/edit/:id", (req, res) => {
     }
 
     const id = req.params.id;
-    let result = productRepository.saveProductImage(id, req.file.filename);
-    if (result.changes === 0) {
-      return res.status(404).render("404", { title: "Product not found" });
+    if (req.file) {
+      let result = productRepository.saveProductImage(id, req.file.filename);
+      if (result.changes === 0) {
+        return res.status(404).render("404", { title: "Product not found" });
+      }
     }
     result = productRepository.update(id, name, description, price);
     if (result.changes === 0) {

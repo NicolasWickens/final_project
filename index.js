@@ -108,7 +108,7 @@ app.post("/register", async (req, res) => {
   res.redirect("/login");
 });
 
-app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
+app.get("/admin", productRepository.requireRole("admin"), (req, res) => {
   const sort = req.query.sort || "id";
 
   const allowed = ["id", "name", "price"];
