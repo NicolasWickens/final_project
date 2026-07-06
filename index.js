@@ -1,29 +1,23 @@
 const express = require("express");
-
-const app = express();
-
 const bcrypt = require("bcrypt");
-
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
-});
-
-app.use(express.static("public"));
-
 const path = require("node:path");
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-
 const session = require("express-session");
-const { loadEnvFile } = require("node:process");
-loadEnvFile();
-
 const expressLayouts = require("express-ejs-layouts");
 const productsRouter = require("./routes/products");
 const userRepository = require("./db/userRepository");
 const productRepository = require("./db/productRepository");
 const usersRouter = require("./routes/users");
+const { loadEnvFile } = require("node:process");
+const db = require("./db/db");
 
+const app = express();
+
+app.use(express.static("public"));
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+loadEnvFile();
 
 app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
@@ -56,13 +50,13 @@ app.get("/login", (req, res) => {
 app.post("/login",  async (req, res) => {
   const { email, password } = req.body;
   const user = userRepository.findByEmail(email);
-
+  
   if (!user) {
     return res.send("User not found");
   }
-
+  
   const valid = await bcrypt.compare(password, user.password_hash);
-
+  
   if (!valid) {
     return res.send("Unauthorized access");
   }
@@ -114,7 +108,6 @@ app.post("/register", async (req, res) => {
   res.redirect("/login");
 });
 
-const db = require("./db/db");
 
 app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
   const sort = req.query.sort || "id";
@@ -170,7 +163,7 @@ app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
   const products = stmt.all(...values);
   const success = req.query.success;
   const users = userRepository.findAllUsers();
-  
+
   res.render("admin", {
     success,
     title: "Products",
@@ -186,3 +179,7 @@ app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
     users,
   });
 });
+
+      app.listen(3000, () => {
+        console.log("Server running at http://localhost:3000");
+      });
