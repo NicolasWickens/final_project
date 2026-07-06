@@ -183,6 +183,22 @@ app.get("/", (req, res) => {
   res.redirect("/products");
 });
 
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+const port = Number(process.env.PORT) || 3000;
+const host = process.env.HOST || "127.0.0.1";
+
+const server = app.listen(port, host);
+
+server.on("listening", () => {
+  console.log(`Server running at http://${host}:${port}`);
+});
+
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${port} is already in use. Try another PORT.`);
+  } else if (error.code === "EPERM") {
+    console.error(`Permission denied while trying to listen on ${host}:${port}.`);
+  } else {
+    console.error("Server failed to start:", error);
+  }
+  process.exit(1);
 });
