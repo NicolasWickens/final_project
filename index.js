@@ -179,6 +179,10 @@ app.get("/admin", productRepository.requireRole("viewer"), (req, res) => {
   });
 });
 
+app.get("/", (req, res) => {
+  res.redirect("/products");
+});
+
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
